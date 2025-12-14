@@ -3,7 +3,7 @@ name = "sgh-api"
 version = "0.1.0"
 description = "A RESTful API for accessing admission announcements and related programs from educational institutions."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.115.12",
     "psycopg2-binary>=2.9.10",
