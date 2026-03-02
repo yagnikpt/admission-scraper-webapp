@@ -1,0 +1,71 @@
+import { z } from "zod";
+import { AnnouncementResponseSchema } from "./schema";
+
+export const errorSchemas = {
+	validation: z.object({
+		message: z.string(),
+		field: z.string().optional(),
+	}),
+	notFound: z.object({
+		message: z.string(),
+	}),
+	internal: z.object({
+		message: z.string(),
+	}),
+};
+
+export const api = {
+	announcements: {
+		list: {
+			method: "GET" as const,
+			path: "/api/announcements" as const,
+			input: z
+				.object({
+					limit: z.number().optional(),
+					offset: z.number().optional(),
+					randomize: z.boolean().optional(),
+				})
+				.optional(),
+			responses: {
+				200: z.array(AnnouncementResponseSchema),
+			},
+		},
+		admissionDates: {
+			method: "GET" as const,
+			path: "/api/announcements/admission-dates" as const,
+			input: z
+				.object({
+					limit: z.number().optional(),
+					offset: z.number().optional(),
+					randomize: z.boolean().optional(),
+				})
+				.optional(),
+			responses: {
+				200: z.array(AnnouncementResponseSchema),
+			},
+		},
+		get: {
+			method: "GET" as const,
+			path: "/api/announcements/:id" as const,
+			responses: {
+				200: AnnouncementResponseSchema,
+				404: errorSchemas.notFound,
+			},
+		},
+	},
+};
+
+export function buildUrl(
+	path: string,
+	params?: Record<string, string | number>,
+): string {
+	let url = path;
+	if (params) {
+		Object.entries(params).forEach(([key, value]) => {
+			if (url.includes(`:${key}`)) {
+				url = url.replace(`:${key}`, String(value));
+			}
+		});
+	}
+	return url;
+}

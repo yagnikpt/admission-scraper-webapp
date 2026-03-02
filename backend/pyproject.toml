@@ -1,0 +1,12 @@
+[project]
+name = "admission-scraper-api"
+version = "0.1.0"
+description = "A RESTful API for accessing admission announcements and related programs from educational institutions."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.115.12",
+    "psycopg2-binary>=2.9.11",
+    "python-dotenv>=1.1.0",
+    "sqlalchemy>=2.0.40",
+]

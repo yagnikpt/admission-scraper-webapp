@@ -1,17 +1,34 @@
 """Direct PostgreSQL connection helper for production environments."""
 
 import socket
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+
 from sqlalchemy import create_engine, event
+
+
+def _sanitize_db_url(db_url: str) -> str:
+    """
+    Strip connection parameters that psycopg2-binary's bundled libpq
+    doesn't support (e.g. channel_binding). These params cause
+    'server closed the connection unexpectedly' errors in Docker.
+    """
+    parsed = urlparse(db_url)
+    params = parse_qs(parsed.query)
+    params.pop("channel_binding", None)
+    cleaned_query = urlencode(params, doseq=True)
+    return urlunparse(parsed._replace(query=cleaned_query))
 
 
 def get_production_engine(db_url):
     """
     Create a production-ready SQLAlchemy engine with optimized settings
-    specifically for render.com and Supabase.
+    specifically for render.com and Neon.
 
     This enforces IPv4 connections by using socket options and
     ensures proper SSL configuration.
     """
+    db_url = _sanitize_db_url(db_url)
+
     # Force socket.getaddrinfo to return IPv4 addresses only
     # This is the most direct way to force IPv4 for all connections
     original_getaddrinfo = socket.getaddrinfo
