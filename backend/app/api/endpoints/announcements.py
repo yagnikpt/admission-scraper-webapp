@@ -14,7 +14,7 @@ from app.schemas.announcement import AnnouncementResponse
 router = APIRouter()
 
 
-@router.get("/", response_model=List[AnnouncementResponse])
+@router.get("", response_model=List[AnnouncementResponse])
 def get_announcements(
     db: Session = Depends(get_db),
     limit: int = Query(25, description="Maximum number of announcements to return"),
