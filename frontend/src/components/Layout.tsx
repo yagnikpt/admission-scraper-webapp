@@ -17,13 +17,13 @@ export function Layout({ children }: LayoutProps) {
 	];
 
 	return (
-		<div className="min-h-screen flex flex-col bg-background selection:bg-accent/20">
+		<div className="min-h-screen flex flex-col selection:bg-accent/20">
 			{/* Top Navigation */}
 			<header className="sticky top-0 z-50 glass-nav">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex justify-between items-center h-16">
 						{/* Logo */}
-						<div className="flex-shrink-0 flex items-center gap-2">
+						<div className="shrink-0 flex items-center gap-2">
 							<div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
 								<GraduationCap className="w-5 h-5 text-primary-foreground" />
 							</div>
@@ -48,7 +48,7 @@ export function Layout({ children }: LayoutProps) {
                       flex items-center gap-2
                       ${
 												isActive
-													? "bg-secondary text-foreground shadow-sm"
+													? "bg-primary/5 text-foreground"
 													: "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
 											}
                     `}
@@ -93,7 +93,7 @@ export function Layout({ children }: LayoutProps) {
                       block px-3 py-3 rounded-lg text-base font-medium transition-colors
                       ${
 												isActive
-													? "bg-secondary text-foreground"
+													? "bg-primary/5 text-foreground"
 													: "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
 											}
                     `}
@@ -114,24 +114,6 @@ export function Layout({ children }: LayoutProps) {
 			<main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 				{children}
 			</main>
-
-			{/* Footer */}
-			<footer className="border-t border-border/50 py-8 mt-auto">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-					<p className="text-sm text-muted-foreground">
-						© {new Date().getFullYear()} AdmissionsScraper. Aggregating academic
-						opportunities.
-					</p>
-					<div className="flex items-center gap-4 text-sm text-muted-foreground">
-						<a href="#" className="hover:text-foreground transition-colors">
-							Privacy
-						</a>
-						<a href="#" className="hover:text-foreground transition-colors">
-							Terms
-						</a>
-					</div>
-				</div>
-			</footer>
 		</div>
 	);
 }

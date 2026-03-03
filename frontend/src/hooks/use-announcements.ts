@@ -36,14 +36,21 @@ export function useAdmissionDates(params?: {
 	limit?: number;
 	offset?: number;
 	randomize?: boolean;
+	categories?: string[];
+	startDate?: string;
+	endDate?: string;
 }) {
 	return useQuery({
 		queryKey: [api.announcements.admissionDates.path, params],
 		queryFn: async () => {
-			const url = buildQueryString(
-				api.announcements.admissionDates.path,
-				params,
-			);
+			const url = buildQueryString(api.announcements.admissionDates.path, {
+				...params,
+				categories: params?.categories?.length
+					? params.categories.join(",")
+					: undefined,
+				start_date: params?.startDate,
+				end_date: params?.endDate,
+			});
 
 			const res = await fetch(url);
 			if (!res.ok) throw new Error("Failed to fetch admission dates");
@@ -62,11 +69,21 @@ export function useAnnouncements(params?: {
 	limit?: number;
 	offset?: number;
 	randomize?: boolean;
+	categories?: string[];
+	startDate?: string;
+	endDate?: string;
 }) {
 	return useQuery({
 		queryKey: [api.announcements.list.path, params],
 		queryFn: async () => {
-			const url = buildQueryString(api.announcements.list.path, params);
+			const url = buildQueryString(api.announcements.list.path, {
+				...params,
+				categories: params?.categories?.length
+					? params.categories.join(",")
+					: undefined,
+				start_date: params?.startDate,
+				end_date: params?.endDate,
+			});
 
 			const res = await fetch(url);
 			if (!res.ok) throw new Error("Failed to fetch announcements");

@@ -94,7 +94,7 @@ export default function AnnouncementDetails() {
 				{/* Main Content Card */}
 				<div className="bg-card rounded-3xl shadow-xl shadow-black/5 border border-border/50 overflow-hidden">
 					{/* Header Header */}
-					<div className="bg-linear-to-r from-primary to-primary/90 px-8 py-10 text-primary-foreground">
+					<div className="bg-linear-to-r from-primary to-primary/90 px-6 md:px-8 py-10 text-primary-foreground">
 						<div className="flex flex-wrap gap-3 mb-6">
 							{announcement.announcement_type && (
 								<Badge className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-sm">
@@ -102,7 +102,7 @@ export default function AnnouncementDetails() {
 								</Badge>
 							)}
 							{announcement.term && (
-								<Badge className="bg-white/10 hover:bg-white/20 text-white border-none backdrop-blur-sm">
+								<Badge className="bg-white/20 hover:bg-white/30 text-white border-none backdrop-blur-sm">
 									{announcement.term}
 								</Badge>
 							)}
@@ -129,20 +129,20 @@ export default function AnnouncementDetails() {
 					</div>
 
 					{/* Body */}
-					<div className="p-8 md:p-10">
+					<div className="px-6 py-8 md:p-10">
 						{/* Action Bar */}
 						{announcement.url && (
 							<div className="flex items-center justify-between p-4 bg-accent/5 border border-accent/20 rounded-2xl mb-10">
-								<div className="flex items-center gap-3 text-accent font-medium">
-									<LinkIcon className="w-5 h-5" />
+								<div className="flex items-center gap-3 text-accent font-medium text-xs md:text-base">
+									<LinkIcon className="size-5" />
 									<span>Official Application Portal</span>
 								</div>
 								<Button
 									onClick={() => window.open(announcement.url, "_blank")}
-									className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg shadow-accent/20 rounded-xl"
+									className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg shadow-accent/20 rounded-lg"
 								>
 									Visit Website
-									<ExternalLink className="w-4 h-4 ml-2" />
+									<ExternalLink className="size-4 ml-2" />
 								</Button>
 							</div>
 						)}

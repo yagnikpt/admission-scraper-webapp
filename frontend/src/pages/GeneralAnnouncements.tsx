@@ -7,8 +7,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAnnouncements } from "@/hooks/use-announcements";
 
 export default function GeneralAnnouncements() {
-	const { data: announcements, isLoading, error } = useAnnouncements();
 	const [searchTerm, setSearchTerm] = useState("");
+	const [category, setCategory] = useState<string[]>([]);
+	const [startDate, setStartDate] = useState("");
+	const [endDate, setEndDate] = useState("");
+	const {
+		data: announcements,
+		isLoading,
+		error,
+	} = useAnnouncements({
+		categories: category,
+		startDate,
+		endDate,
+	});
 
 	const filteredData = useMemo(() => {
 		if (!announcements) return [];
@@ -27,11 +38,11 @@ export default function GeneralAnnouncements() {
 
 	return (
 		<Layout>
-			<div className="mb-8 md:mb-12 text-center md:text-left">
+			<div className="mb-8 md:mb-12">
 				<h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
 					General Announcements
 				</h1>
-				<p className="text-lg text-muted-foreground max-w-2xl">
+				<p className="md:text-lg text-muted-foreground max-w-2xl">
 					Browse through all academic announcements, program updates, and
 					institutional news.
 				</p>
@@ -40,6 +51,12 @@ export default function GeneralAnnouncements() {
 			<FilterBar
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
+				category={category}
+				setCategory={setCategory}
+				startDate={startDate}
+				setStartDate={setStartDate}
+				endDate={endDate}
+				setEndDate={setEndDate}
 				resultCount={filteredData.length}
 			/>
 

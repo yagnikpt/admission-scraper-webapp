@@ -7,8 +7,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAdmissionDates } from "@/hooks/use-announcements";
 
 export default function Home() {
-	const { data: announcements, isLoading, error } = useAdmissionDates();
 	const [searchTerm, setSearchTerm] = useState("");
+	const [category, setCategory] = useState<string[]>([]);
+	const [startDate, setStartDate] = useState("");
+	const [endDate, setEndDate] = useState("");
+	const {
+		data: announcements,
+		isLoading,
+		error,
+	} = useAdmissionDates({
+		categories: category,
+		startDate,
+		endDate,
+	});
 
 	const filteredData = useMemo(() => {
 		if (!announcements) return [];
@@ -27,11 +38,11 @@ export default function Home() {
 
 	return (
 		<Layout>
-			<div className="mb-8 md:mb-12 text-center md:text-left">
+			<div className="mb-8 md:mb-12">
 				<h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
 					Latest Admission Dates
 				</h1>
-				<p className="text-lg text-muted-foreground max-w-2xl">
+				<p className="md:text-lg text-muted-foreground max-w-2xl">
 					Stay on top of upcoming application deadlines, term openings, and
 					critical academic dates from top institutions.
 				</p>
@@ -40,6 +51,12 @@ export default function Home() {
 			<FilterBar
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
+				category={category}
+				setCategory={setCategory}
+				startDate={startDate}
+				setStartDate={setStartDate}
+				endDate={endDate}
+				setEndDate={setEndDate}
 				resultCount={filteredData.length}
 			/>
 
@@ -54,7 +71,7 @@ export default function Home() {
 					{[1, 2, 3, 4, 5, 6].map((i) => (
 						<div
 							key={i}
-							className="bg-card rounded-2xl p-6 border border-border/60 h-[300px] flex flex-col"
+							className="bg-card rounded-2xl p-6 border border-border/60 h-75 flex flex-col"
 						>
 							<Skeleton className="w-1/2 h-5 mb-4 rounded" />
 							<Skeleton className="w-full h-8 mb-2 rounded" />
