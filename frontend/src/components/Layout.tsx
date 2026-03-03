@@ -81,7 +81,7 @@ export function Layout({ children }: LayoutProps) {
 				{/* Mobile Navigation Dropdown */}
 				{mobileMenuOpen && (
 					<div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-lg">
-						<div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+						<div className="px-4 pt-2 pb-3 space-y-1 sm:px-3">
 							{navItems.map((item) => {
 								const isActive = location.pathname === item.path;
 								return (
@@ -93,7 +93,7 @@ export function Layout({ children }: LayoutProps) {
                       block px-3 py-3 rounded-lg text-base font-medium transition-colors
                       ${
 												isActive
-													? "bg-primary/5 text-foreground"
+													? "bg-primary/10 text-foreground"
 													: "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
 											}
                     `}

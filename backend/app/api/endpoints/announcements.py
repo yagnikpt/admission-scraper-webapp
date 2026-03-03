@@ -4,12 +4,13 @@ from datetime import date
 from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import case
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.sql.expression import func
 
-from app.db.session import get_db
 from app.db.models import Announcement, Program
+from app.db.session import get_db
 from app.schemas.announcement import AnnouncementResponse
 
 router = APIRouter()
@@ -19,7 +20,7 @@ router = APIRouter()
 def get_announcements(
     db: Session = Depends(get_db),
     limit: int = Query(25, description="Maximum number of announcements to return"),
-    offset: int = Query(0, description="Number of announcements to skip"),
+    page: int = Query(1, description="Number of announcements to skip"),
     randomize: bool = Query(False, description="Whether to randomize the results"),
     categories: Optional[List[str]] = Query(
         None,
@@ -39,10 +40,11 @@ def get_announcements(
 
     Parameters:
     - limit: Maximum number of announcements to return (default: 25)
-    - offset: Number of announcements to skip (for pagination)
-    - randomize: Whether to randomize the results (default: False, ordered by updated_at desc)
+    - page: Number of announcements to skip (for pagination)
+    - randomize: Whether to randomize the results (default: False, ordered by deadline: future dates closest first, then past dates most recent first)
     """
     try:
+        offset = (page - 1) * limit if page > 0 else 0
         # Start building the query with eager loading of related entities
         query = db.query(Announcement).options(
             joinedload(Announcement.programs),
@@ -89,7 +91,24 @@ def get_announcements(
         if randomize:
             query = query.order_by(func.random())
         else:
-            query = query.order_by(Announcement.updated_at.desc())
+            # Order by deadline: future dates (closest first), then past dates (most recent first)
+            today = date.today()
+            query = query.order_by(
+                case(
+                    (
+                        Announcement.application_deadline >= today,
+                        Announcement.application_deadline,
+                    ),
+                    else_=None,
+                ).asc(),
+                case(
+                    (
+                        Announcement.application_deadline < today,
+                        Announcement.application_deadline,
+                    ),
+                    else_=None,
+                ).desc(),
+            )
 
         # Apply pagination
         query = query.offset(offset).limit(limit)
@@ -109,7 +128,7 @@ def get_announcements(
 def get_admission_dates_announcements(
     db: Session = Depends(get_db),
     limit: int = Query(25, description="Maximum number of announcements to return"),
-    offset: int = Query(0, description="Number of announcements to skip"),
+    page: int = Query(1, description="Number of announcements to skip"),
     randomize: bool = Query(False, description="Whether to randomize the results"),
     categories: Optional[List[str]] = Query(
         None,
@@ -130,10 +149,11 @@ def get_admission_dates_announcements(
 
     Parameters:
     - limit: Maximum number of announcements to return (default: 25)
-    - offset: Number of announcements to skip (for pagination)
-    - randomize: Whether to randomize the results (default: False, ordered by updated_at desc)
+    - page: Number of announcements to skip (for pagination)
+    - randomize: Whether to randomize the results (default: False, ordered by deadline: future dates closest first, then past dates most recent first)
     """
     try:
+        offset = (page - 1) * limit if page > 0 else 0
         # Start building the query with eager loading of related entities
         query = (
             db.query(Announcement)
@@ -184,7 +204,24 @@ def get_admission_dates_announcements(
         if randomize:
             query = query.order_by(func.random())
         else:
-            query = query.order_by(Announcement.updated_at.desc())
+            # Order by deadline: future dates (closest first), then past dates (most recent first)
+            today = date.today()
+            query = query.order_by(
+                case(
+                    (
+                        Announcement.application_deadline >= today,
+                        Announcement.application_deadline,
+                    ),
+                    else_=None,
+                ).asc(),
+                case(
+                    (
+                        Announcement.application_deadline < today,
+                        Announcement.application_deadline,
+                    ),
+                    else_=None,
+                ).desc(),
+            )
 
         # Apply pagination
         query = query.offset(offset).limit(limit)

@@ -61,7 +61,7 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
 						{announcement.title}
 					</h3>
 					{announcement.content && (
-						<p className="mt-2 text-sm text-muted-foreground line-clamp-3">
+						<p className="mt-2 text-sm text-muted-foreground line-clamp-3 mb-2">
 							{announcement.content}
 						</p>
 					)}
@@ -76,8 +76,11 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
 				)}
 			</div>
 
+			{/* Spacer to push button to bottom */}
+			<div className="grow" />
+
 			{/* Meta details */}
-			<div className="flex flex-wrap items-center gap-y-2 gap-x-4 mb-5 text-sm text-muted-foreground">
+			<div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-sm text-muted-foreground">
 				{announcement.state && (
 					<div className="flex items-center gap-1.5">
 						<MapPin className="w-4 h-4" />
@@ -93,9 +96,6 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
 					</div>
 				)}
 			</div>
-
-			{/* Spacer to push button to bottom */}
-			<div className="grow" />
 
 			{/* Actions */}
 			<div className="pt-4 border-t border-border/40 mt-auto">
