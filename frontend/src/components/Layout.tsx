@@ -1,7 +1,9 @@
-import { Bell, GraduationCap, Menu, X } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { Bell, Clock, GraduationCap, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router";
 import { Button } from "@/components/ui/button";
+import { useLastScraped } from "@/hooks/use-announcements";
 
 interface LayoutProps {
 	children: React.ReactNode;
@@ -10,6 +12,13 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
 	const location = useLocation();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const { data: lastScrapedData } = useLastScraped();
+
+	const lastScrapedLabel = lastScrapedData?.last_scraped
+		? formatDistanceToNow(new Date(lastScrapedData.last_scraped), {
+				addSuffix: true,
+			})
+		: null;
 
 	const navItems = [
 		{ label: "Admission Dates", path: "/", icon: GraduationCap },
@@ -36,7 +45,7 @@ export function Layout({ children }: LayoutProps) {
 						</div>
 
 						{/* Desktop Navigation */}
-						<nav className="hidden md:flex space-x-1">
+						<nav className="hidden md:flex items-center space-x-1">
 							{navItems.map((item) => {
 								const isActive = location.pathname === item.path;
 								return (
@@ -58,6 +67,12 @@ export function Layout({ children }: LayoutProps) {
 									</Link>
 								);
 							})}
+							{lastScrapedLabel && (
+								<span className="ml-2 px-3 py-1.5 rounded-full text-xs text-muted-foreground bg-secondary/50 flex items-center gap-1.5">
+									<Clock className="w-3 h-3" />
+									Last scraped {lastScrapedLabel}
+								</span>
+							)}
 						</nav>
 
 						{/* Mobile menu button */}
@@ -105,6 +120,12 @@ export function Layout({ children }: LayoutProps) {
 									</Link>
 								);
 							})}
+							{lastScrapedLabel && (
+								<div className="px-3 py-2 flex items-center gap-2 text-xs text-muted-foreground">
+									<Clock className="w-3 h-3" />
+									Last scraped {lastScrapedLabel}
+								</div>
+							)}
 						</div>
 					</div>
 				)}

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AnnouncementResponseSchema } from "./schema";
+import { AnnouncementResponseSchema, LastScrapedResponseSchema } from "./schema";
 
 export const errorSchemas = {
 	validation: z.object({
@@ -50,6 +50,15 @@ export const api = {
 			responses: {
 				200: AnnouncementResponseSchema,
 				404: errorSchemas.notFound,
+			},
+		},
+	},
+	meta: {
+		lastScraped: {
+			method: "GET" as const,
+			path: "/api/last-scraped" as const,
+			responses: {
+				200: LastScrapedResponseSchema,
 			},
 		},
 	},

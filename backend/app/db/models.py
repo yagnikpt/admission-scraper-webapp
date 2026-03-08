@@ -1,9 +1,10 @@
 """Database models for the application."""
 
-from sqlalchemy import Column, String, Text, Date, ForeignKey, Integer
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID
 import uuid
+
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
+from sqlalchemy.orm import relationship
 
 from app.db.session import Base
 
@@ -17,7 +18,6 @@ class State(Base):
     name = Column(String, nullable=False, unique=True)
     abbreviation = Column(String(2), nullable=False, unique=True)
 
-    # Define relationships
     institutions = relationship("Institution", back_populates="state")
     announcements = relationship("Announcement", back_populates="state")
 
@@ -32,10 +32,9 @@ class Institution(Base):
     website = Column(String, nullable=False, unique=True)
     state_id = Column(UUID(as_uuid=True), ForeignKey("states.state_id"), nullable=True)
     description = Column(Text, nullable=True)
-    created_at = Column(Date, nullable=True)
-    updated_at = Column(Date, nullable=True)
+    created_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True)
 
-    # Define relationships
     state = relationship("State", back_populates="institutions")
     announcements = relationship("Announcement", back_populates="institution")
 
@@ -50,10 +49,9 @@ class Program(Base):
     description = Column(Text, nullable=True)
     degree_level = Column(String, nullable=True)
     duration_months = Column(Integer, nullable=True)
-    created_at = Column(Date, nullable=True)
-    updated_at = Column(Date, nullable=True)
+    created_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True)
 
-    # Define relationship to announcements
     announcements = relationship(
         "Announcement", secondary="program_announcements", back_populates="programs"
     )
@@ -67,7 +65,6 @@ class Tag(Base):
     tag_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(50), nullable=False)
 
-    # Define relationship to announcements
     announcements = relationship(
         "Announcement", secondary="announcement_tags", back_populates="tags"
     )
@@ -92,19 +89,24 @@ class Announcement(Base):
     term = Column(String, nullable=True)
     contact_info = Column(Text, nullable=True)
     announcement_type = Column(String, nullable=True)
-    created_at = Column(Date, nullable=True)
-    updated_at = Column(Date, nullable=True)
+    created_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, nullable=True)
+    search_vector = Column(TSVECTOR, nullable=True)
+    scraped_page_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("scraped_pages.scraped_page_id", ondelete="CASCADE"),
+        nullable=True,
+    )
 
-    # Define relationships
     programs = relationship(
         "Program", secondary="program_announcements", back_populates="announcements"
     )
     institution = relationship("Institution", back_populates="announcements")
     state = relationship("State", back_populates="announcements")
-    # Add relationship to tags
     tags = relationship(
         "Tag", secondary="announcement_tags", back_populates="announcements"
     )
+    scraped_page = relationship("ScrapedPage", back_populates="announcements")
 
 
 class ProgramAnnouncement(Base):
@@ -137,3 +139,17 @@ class AnnouncementTag(Base):
         ForeignKey("tags.tag_id", ondelete="CASCADE"),
         primary_key=True,
     )
+
+
+class ScrapedPage(Base):
+    """Database model for scraped pages tracking."""
+
+    __tablename__ = "scraped_pages"
+
+    scraped_page_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    url = Column(String(255), nullable=False)
+    site = Column(String(255), nullable=True)
+    last_scraped = Column(DateTime, nullable=False)
+    content_hash = Column(String(64), nullable=False)
+
+    announcements = relationship("Announcement", back_populates="scraped_page")

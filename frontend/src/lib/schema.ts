@@ -51,3 +51,8 @@ export const AnnouncementResponseSchema = z.object({
 	tags: z.array(TagResponseSchema).default([]),
 });
 export type AnnouncementResponse = z.infer<typeof AnnouncementResponseSchema>;
+
+export const LastScrapedResponseSchema = z.object({
+	last_scraped: z.string().nullable(),
+});
+export type LastScrapedResponse = z.infer<typeof LastScrapedResponseSchema>;

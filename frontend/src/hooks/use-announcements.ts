@@ -118,3 +118,20 @@ export function useAnnouncement(id: string) {
 		enabled: !!id,
 	});
 }
+
+export function useLastScraped() {
+	return useQuery({
+		queryKey: [api.meta.lastScraped.path],
+		queryFn: async () => {
+			const res = await fetch(api.meta.lastScraped.path);
+			if (!res.ok) throw new Error("Failed to fetch last scraped date");
+
+			const data = await res.json();
+			return parseWithLogging(
+				api.meta.lastScraped.responses[200],
+				data,
+				"meta.lastScraped",
+			);
+		},
+	});
+}
