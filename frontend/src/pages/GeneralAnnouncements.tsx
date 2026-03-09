@@ -1,32 +1,88 @@
 import { FileX2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import { FilterBar } from "@/components/FilterBar";
 import { GeneralAnnouncementCard } from "@/components/GeneralAnnouncementCard";
 import { Layout } from "@/components/Layout";
+import {
+	Pagination,
+	PaginationContent,
+	PaginationEllipsis,
+	PaginationItem,
+	PaginationLink,
+	PaginationNext,
+	PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAnnouncements } from "@/hooks/use-announcements";
 
+const PAGE_SIZE = 20;
+
 export default function GeneralAnnouncements() {
+	const [searchParams, setSearchParams] = useSearchParams();
+	const page = Math.max(1, Number(searchParams.get("page")) || 1);
+
+	const setPage = useCallback(
+		(newPage: number) => {
+			setSearchParams((prev) => {
+				const next = new URLSearchParams(prev);
+				if (newPage <= 1) {
+					next.delete("page");
+				} else {
+					next.set("page", String(newPage));
+				}
+				return next;
+			});
+			window.scrollTo({ top: 0, behavior: "instant" });
+		},
+		[setSearchParams],
+	);
+
 	const [searchTerm, setSearchTerm] = useState("");
 	const [category, setCategory] = useState<string[]>([]);
 	const [startDate, setStartDate] = useState("");
 	const [endDate, setEndDate] = useState("");
-	const {
-		data: announcements,
-		isLoading,
-		error,
-	} = useAnnouncements({
+
+	const setCategoryAndResetPage = useCallback(
+		(val: string[]) => {
+			setCategory(val);
+			setPage(1);
+		},
+		[setPage],
+	);
+	const setStartDateAndResetPage = useCallback(
+		(val: string) => {
+			setStartDate(val);
+			setPage(1);
+		},
+		[setPage],
+	);
+	const setEndDateAndResetPage = useCallback(
+		(val: string) => {
+			setEndDate(val);
+			setPage(1);
+		},
+		[setPage],
+	);
+
+	const { data, isLoading, error } = useAnnouncements({
+		page,
+		limit: PAGE_SIZE,
 		categories: category,
 		startDate,
 		endDate,
 	});
 
+	const total = data?.total ?? 0;
+	const totalPages = Math.ceil(total / PAGE_SIZE);
+
 	const filteredData = useMemo(() => {
-		if (!announcements) return [];
-		if (!searchTerm.trim()) return announcements;
+		const items = data?.items ?? [];
+		if (!items.length) return [];
+		if (!searchTerm.trim()) return items;
 
 		const lowerSearch = searchTerm.toLowerCase();
-		return announcements.filter((item) => {
+		return items.filter((item) => {
 			const matchTitle = item.title?.toLowerCase().includes(lowerSearch);
 			const matchInst = item.institution?.name
 				?.toLowerCase()
@@ -34,7 +90,23 @@ export default function GeneralAnnouncements() {
 			const matchState = item.state?.name?.toLowerCase().includes(lowerSearch);
 			return matchTitle || matchInst || matchState;
 		});
-	}, [announcements, searchTerm]);
+	}, [data, searchTerm]);
+
+	const getPageNumbers = useCallback(() => {
+		const pages: (number | "ellipsis-start" | "ellipsis-end")[] = [];
+		if (totalPages <= 7) {
+			for (let i = 1; i <= totalPages; i++) pages.push(i);
+			return pages;
+		}
+		pages.push(1);
+		if (page > 3) pages.push("ellipsis-start");
+		const start = Math.max(2, page - 1);
+		const end = Math.min(totalPages - 1, page + 1);
+		for (let i = start; i <= end; i++) pages.push(i);
+		if (page < totalPages - 2) pages.push("ellipsis-end");
+		pages.push(totalPages);
+		return pages;
+	}, [page, totalPages]);
 
 	return (
 		<Layout>
@@ -52,12 +124,12 @@ export default function GeneralAnnouncements() {
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
 				category={category}
-				setCategory={setCategory}
+				setCategory={setCategoryAndResetPage}
 				startDate={startDate}
-				setStartDate={setStartDate}
+				setStartDate={setStartDateAndResetPage}
 				endDate={endDate}
-				setEndDate={setEndDate}
-				resultCount={filteredData.length}
+				setEndDate={setEndDateAndResetPage}
+				resultCount={searchTerm.trim() ? filteredData.length : total}
 			/>
 
 			{error ? (
@@ -91,13 +163,70 @@ export default function GeneralAnnouncements() {
 					</p>
 				</div>
 			) : (
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-					{filteredData.map((announcement) => (
-						<div key={announcement.announcement_id} className="h-full">
-							<GeneralAnnouncementCard announcement={announcement} />
-						</div>
-					))}
-				</div>
+				<>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+						{filteredData.map((announcement) => (
+							<div key={announcement.announcement_id} className="h-full">
+								<GeneralAnnouncementCard announcement={announcement} />
+							</div>
+						))}
+					</div>
+
+					{totalPages > 1 && (
+						<Pagination className="mt-10">
+							<PaginationContent>
+								<PaginationItem>
+									<PaginationPrevious
+										onClick={(e) => {
+											e.preventDefault();
+											setPage(Math.max(1, page - 1));
+										}}
+										className={
+											page <= 1
+												? "pointer-events-none opacity-50"
+												: "cursor-pointer"
+										}
+									/>
+								</PaginationItem>
+
+								{getPageNumbers().map((p) =>
+									typeof p === "string" ? (
+										<PaginationItem key={p}>
+											<PaginationEllipsis />
+										</PaginationItem>
+									) : (
+										<PaginationItem key={p}>
+											<PaginationLink
+												isActive={p === page}
+												onClick={(e) => {
+													e.preventDefault();
+													setPage(p);
+												}}
+												className="cursor-pointer"
+											>
+												{p}
+											</PaginationLink>
+										</PaginationItem>
+									),
+								)}
+
+								<PaginationItem>
+									<PaginationNext
+										onClick={(e) => {
+											e.preventDefault();
+											setPage(Math.min(totalPages, page + 1));
+										}}
+										className={
+											page >= totalPages
+												? "pointer-events-none opacity-50"
+												: "cursor-pointer"
+										}
+									/>
+								</PaginationItem>
+							</PaginationContent>
+						</Pagination>
+					)}
+				</>
 			)}
 		</Layout>
 	);

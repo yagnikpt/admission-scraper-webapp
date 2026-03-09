@@ -11,16 +11,16 @@ from sqlalchemy.sql.expression import func
 
 from app.db.models import Announcement, Program
 from app.db.session import get_db
-from app.schemas.announcement import AnnouncementResponse
+from app.schemas.announcement import AnnouncementResponse, PaginatedAnnouncementResponse
 
 router = APIRouter()
 
 
-@router.get("", response_model=List[AnnouncementResponse])
+@router.get("", response_model=PaginatedAnnouncementResponse)
 def get_announcements(
     db: Session = Depends(get_db),
-    limit: int = Query(25, description="Maximum number of announcements to return"),
-    page: int = Query(1, description="Number of announcements to skip"),
+    limit: int = Query(20, description="Maximum number of announcements to return"),
+    page: int = Query(1, description="Page number (1-indexed)"),
     randomize: bool = Query(False, description="Whether to randomize the results"),
     categories: Optional[List[str]] = Query(
         None,
@@ -39,18 +39,15 @@ def get_announcements(
     Retrieve announcements with their related programs, institutions, states, and tags.
 
     Parameters:
-    - limit: Maximum number of announcements to return (default: 25)
-    - page: Number of announcements to skip (for pagination)
+    - limit: Maximum number of announcements to return (default: 20)
+    - page: Page number, 1-indexed (default: 1)
     - randomize: Whether to randomize the results (default: False, ordered by deadline: future dates closest first, then past dates most recent first)
     """
     try:
         offset = (page - 1) * limit if page > 0 else 0
-        # Start building the query with eager loading of related entities
-        query = db.query(Announcement).options(
-            joinedload(Announcement.programs),
-            joinedload(Announcement.institution),
-            joinedload(Announcement.state),
-            joinedload(Announcement.tags),
+        # Base filter query (without eager loads) for counting
+        base_query = db.query(Announcement).filter(
+            Announcement.announcement_type != "admission_dates"
         )
 
         # Filter by categories (degree level)
@@ -61,7 +58,7 @@ def get_announcements(
                     [part.strip() for part in value.split(",") if part.strip()]
                 )
             if normalized_categories:
-                query = query.filter(
+                base_query = base_query.filter(
                     Announcement.programs.any(
                         Program.degree_level.in_(normalized_categories)
                     )
@@ -76,7 +73,9 @@ def get_announcements(
                     status_code=400,
                     detail="start_date must be in YYYY-MM-DD format",
                 ) from exc
-            query = query.filter(Announcement.application_deadline >= start_date_parsed)
+            base_query = base_query.filter(
+                Announcement.application_deadline >= start_date_parsed
+            )
         if end_date:
             try:
                 end_date_parsed = date.fromisoformat(end_date)
@@ -85,7 +84,20 @@ def get_announcements(
                     status_code=400,
                     detail="end_date must be in YYYY-MM-DD format",
                 ) from exc
-            query = query.filter(Announcement.application_deadline <= end_date_parsed)
+            base_query = base_query.filter(
+                Announcement.application_deadline <= end_date_parsed
+            )
+
+        # Get total count before pagination
+        total = base_query.count()
+
+        # Add eager loading for the actual data query
+        query = base_query.options(
+            joinedload(Announcement.programs),
+            joinedload(Announcement.institution),
+            joinedload(Announcement.state),
+            joinedload(Announcement.tags),
+        )
 
         # Apply ordering based on randomize parameter
         if randomize:
@@ -116,7 +128,12 @@ def get_announcements(
         # Execute the query
         announcements = query.all()
 
-        return announcements
+        return {
+            "items": announcements,
+            "total": total,
+            "page": page,
+            "limit": limit,
+        }
 
     except Exception as e:
         raise HTTPException(
@@ -124,11 +141,11 @@ def get_announcements(
         )
 
 
-@router.get("/admission-dates", response_model=List[AnnouncementResponse])
+@router.get("/admission-dates", response_model=PaginatedAnnouncementResponse)
 def get_admission_dates_announcements(
     db: Session = Depends(get_db),
-    limit: int = Query(25, description="Maximum number of announcements to return"),
-    page: int = Query(1, description="Number of announcements to skip"),
+    limit: int = Query(20, description="Maximum number of announcements to return"),
+    page: int = Query(1, description="Page number (1-indexed)"),
     randomize: bool = Query(False, description="Whether to randomize the results"),
     categories: Optional[List[str]] = Query(
         None,
@@ -148,22 +165,15 @@ def get_admission_dates_announcements(
     and their related programs, institutions, states, and tags.
 
     Parameters:
-    - limit: Maximum number of announcements to return (default: 25)
-    - page: Number of announcements to skip (for pagination)
+    - limit: Maximum number of announcements to return (default: 20)
+    - page: Page number, 1-indexed (default: 1)
     - randomize: Whether to randomize the results (default: False, ordered by deadline: future dates closest first, then past dates most recent first)
     """
     try:
         offset = (page - 1) * limit if page > 0 else 0
-        # Start building the query with eager loading of related entities
-        query = (
-            db.query(Announcement)
-            .options(
-                joinedload(Announcement.programs),
-                joinedload(Announcement.institution),
-                joinedload(Announcement.state),
-                joinedload(Announcement.tags),
-            )
-            .filter(Announcement.announcement_type == "admission_dates")
+        # Base filter query (without eager loads) for counting
+        base_query = db.query(Announcement).filter(
+            Announcement.announcement_type == "admission_dates"
         )
 
         # Filter by categories (degree level)
@@ -174,7 +184,7 @@ def get_admission_dates_announcements(
                     [part.strip() for part in value.split(",") if part.strip()]
                 )
             if normalized_categories:
-                query = query.filter(
+                base_query = base_query.filter(
                     Announcement.programs.any(
                         Program.degree_level.in_(normalized_categories)
                     )
@@ -189,7 +199,9 @@ def get_admission_dates_announcements(
                     status_code=400,
                     detail="start_date must be in YYYY-MM-DD format",
                 ) from exc
-            query = query.filter(Announcement.application_deadline >= start_date_parsed)
+            base_query = base_query.filter(
+                Announcement.application_deadline >= start_date_parsed
+            )
         if end_date:
             try:
                 end_date_parsed = date.fromisoformat(end_date)
@@ -198,7 +210,20 @@ def get_admission_dates_announcements(
                     status_code=400,
                     detail="end_date must be in YYYY-MM-DD format",
                 ) from exc
-            query = query.filter(Announcement.application_deadline <= end_date_parsed)
+            base_query = base_query.filter(
+                Announcement.application_deadline <= end_date_parsed
+            )
+
+        # Get total count before pagination
+        total = base_query.count()
+
+        # Add eager loading for the actual data query
+        query = base_query.options(
+            joinedload(Announcement.programs),
+            joinedload(Announcement.institution),
+            joinedload(Announcement.state),
+            joinedload(Announcement.tags),
+        )
 
         # Apply ordering based on randomize parameter
         if randomize:
@@ -229,7 +254,12 @@ def get_admission_dates_announcements(
         # Execute the query
         announcements = query.all()
 
-        return announcements
+        return {
+            "items": announcements,
+            "total": total,
+            "page": page,
+            "limit": limit,
+        }
 
     except Exception as e:
         raise HTTPException(

@@ -23,7 +23,7 @@ interface FilterBarProps {
 	searchTerm: string;
 	setSearchTerm: (val: string) => void;
 	category: string[];
-	setCategory: React.Dispatch<React.SetStateAction<string[]>>;
+	setCategory: (val: string[]) => void;
 	startDate: string;
 	setStartDate: (val: string) => void;
 	endDate: string;
@@ -62,9 +62,9 @@ export function FilterBar({
 
 	function handleCategoryChange(name: string, value: boolean) {
 		if (value && !category.includes(name)) {
-			setCategory((prev) => [...prev, name]);
+			setCategory([...category, name]);
 		} else if (!value && category.includes(name)) {
-			setCategory((prev) => prev.filter((c) => c !== name));
+			setCategory(category.filter((c) => c !== name));
 		}
 	}
 

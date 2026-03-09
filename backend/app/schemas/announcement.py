@@ -43,3 +43,12 @@ class AnnouncementResponse(AnnouncementBase):
 
     class Config:
         from_attributes = True
+
+
+class PaginatedAnnouncementResponse(BaseModel):
+    """Paginated wrapper for announcement lists."""
+
+    items: List[AnnouncementResponse]
+    total: int
+    page: int
+    limit: int

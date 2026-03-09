@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AnnouncementResponseSchema, LastScrapedResponseSchema } from "./schema";
+import { AnnouncementResponseSchema, LastScrapedResponseSchema, PaginatedAnnouncementResponseSchema } from "./schema";
 
 export const errorSchemas = {
 	validation: z.object({
@@ -22,12 +22,12 @@ export const api = {
 			input: z
 				.object({
 					limit: z.number().optional(),
-					offset: z.number().optional(),
+					page: z.number().optional(),
 					randomize: z.boolean().optional(),
 				})
 				.optional(),
 			responses: {
-				200: z.array(AnnouncementResponseSchema),
+				200: PaginatedAnnouncementResponseSchema,
 			},
 		},
 		admissionDates: {
@@ -36,12 +36,12 @@ export const api = {
 			input: z
 				.object({
 					limit: z.number().optional(),
-					offset: z.number().optional(),
+					page: z.number().optional(),
 					randomize: z.boolean().optional(),
 				})
 				.optional(),
 			responses: {
-				200: z.array(AnnouncementResponseSchema),
+				200: PaginatedAnnouncementResponseSchema,
 			},
 		},
 		get: {

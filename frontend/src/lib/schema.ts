@@ -52,6 +52,16 @@ export const AnnouncementResponseSchema = z.object({
 });
 export type AnnouncementResponse = z.infer<typeof AnnouncementResponseSchema>;
 
+export const PaginatedAnnouncementResponseSchema = z.object({
+	items: z.array(AnnouncementResponseSchema),
+	total: z.number(),
+	page: z.number(),
+	limit: z.number(),
+});
+export type PaginatedAnnouncementResponse = z.infer<
+	typeof PaginatedAnnouncementResponseSchema
+>;
+
 export const LastScrapedResponseSchema = z.object({
 	last_scraped: z.string().nullable(),
 });

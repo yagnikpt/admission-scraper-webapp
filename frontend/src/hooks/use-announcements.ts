@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import type { z } from "zod";
 import { api, buildUrl } from "@/lib/apiRoutes";
 
@@ -33,8 +33,8 @@ function buildQueryString(
 }
 
 export function useAdmissionDates(params?: {
+	page?: number;
 	limit?: number;
-	offset?: number;
 	randomize?: boolean;
 	categories?: string[];
 	startDate?: string;
@@ -44,7 +44,9 @@ export function useAdmissionDates(params?: {
 		queryKey: [api.announcements.admissionDates.path, params],
 		queryFn: async () => {
 			const url = buildQueryString(api.announcements.admissionDates.path, {
-				...params,
+				page: params?.page,
+				limit: params?.limit,
+				randomize: params?.randomize,
 				categories: params?.categories?.length
 					? params.categories.join(",")
 					: undefined,
@@ -62,12 +64,13 @@ export function useAdmissionDates(params?: {
 				"admissionDates",
 			);
 		},
+		placeholderData: keepPreviousData,
 	});
 }
 
 export function useAnnouncements(params?: {
+	page?: number;
 	limit?: number;
-	offset?: number;
 	randomize?: boolean;
 	categories?: string[];
 	startDate?: string;
@@ -77,7 +80,9 @@ export function useAnnouncements(params?: {
 		queryKey: [api.announcements.list.path, params],
 		queryFn: async () => {
 			const url = buildQueryString(api.announcements.list.path, {
-				...params,
+				page: params?.page,
+				limit: params?.limit,
+				randomize: params?.randomize,
 				categories: params?.categories?.length
 					? params.categories.join(",")
 					: undefined,
@@ -95,6 +100,7 @@ export function useAnnouncements(params?: {
 				"announcements.list",
 			);
 		},
+		placeholderData: keepPreviousData,
 	});
 }
 
