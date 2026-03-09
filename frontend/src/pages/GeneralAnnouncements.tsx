@@ -1,9 +1,10 @@
 import { FileX2 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { FilterBar } from "@/components/FilterBar";
 import { GeneralAnnouncementCard } from "@/components/GeneralAnnouncementCard";
 import { Layout } from "@/components/Layout";
+import { TopProgressBar } from "@/components/TopProgressBar";
 import {
 	Pagination,
 	PaginationContent,
@@ -21,9 +22,11 @@ const PAGE_SIZE = 20;
 export default function GeneralAnnouncements() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const page = Math.max(1, Number(searchParams.get("page")) || 1);
+	const pendingScrollRef = useRef(false);
 
 	const setPage = useCallback(
 		(newPage: number) => {
+			pendingScrollRef.current = true;
 			setSearchParams((prev) => {
 				const next = new URLSearchParams(prev);
 				if (newPage <= 1) {
@@ -33,7 +36,6 @@ export default function GeneralAnnouncements() {
 				}
 				return next;
 			});
-			window.scrollTo({ top: 0, behavior: "instant" });
 		},
 		[setSearchParams],
 	);
@@ -65,13 +67,21 @@ export default function GeneralAnnouncements() {
 		[setPage],
 	);
 
-	const { data, isLoading, error } = useAnnouncements({
+	const { data, isLoading, isFetching, isPlaceholderData, error } = useAnnouncements({
 		page,
 		limit: PAGE_SIZE,
 		categories: category,
 		startDate,
 		endDate,
 	});
+
+	// Scroll to top only after new page data has actually loaded
+	useEffect(() => {
+		if (pendingScrollRef.current && data) {
+			pendingScrollRef.current = false;
+			window.scrollTo({ top: 0, behavior: "instant" });
+		}
+	}, [data]);
 
 	const total = data?.total ?? 0;
 	const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -110,6 +120,7 @@ export default function GeneralAnnouncements() {
 
 	return (
 		<Layout>
+			<TopProgressBar show={isFetching && isPlaceholderData} />
 			<div className="mb-8 md:mb-12">
 				<h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
 					General Announcements

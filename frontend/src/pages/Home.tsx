@@ -1,9 +1,10 @@
 import { CalendarX2 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { AnnouncementCard } from "@/components/AnnouncementCard";
 import { FilterBar } from "@/components/FilterBar";
 import { Layout } from "@/components/Layout";
+import { TopProgressBar } from "@/components/TopProgressBar";
 import {
 	Pagination,
 	PaginationContent,
@@ -21,9 +22,11 @@ const PAGE_SIZE = 20;
 export default function Home() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const page = Math.max(1, Number(searchParams.get("page")) || 1);
+	const pendingScrollRef = useRef(false);
 
 	const setPage = useCallback(
 		(newPage: number) => {
+			pendingScrollRef.current = true;
 			setSearchParams((prev) => {
 				const next = new URLSearchParams(prev);
 				if (newPage <= 1) {
@@ -33,7 +36,6 @@ export default function Home() {
 				}
 				return next;
 			});
-			window.scrollTo({ top: 0, behavior: "instant" });
 		},
 		[setSearchParams],
 	);
@@ -65,13 +67,21 @@ export default function Home() {
 		[setPage],
 	);
 
-	const { data, isLoading, error } = useAdmissionDates({
+	const { data, isLoading, isFetching, isPlaceholderData, error } = useAdmissionDates({
 		page,
 		limit: PAGE_SIZE,
 		categories: category,
 		startDate,
 		endDate,
 	});
+
+	// Scroll to top only after new page data has actually loaded
+	useEffect(() => {
+		if (pendingScrollRef.current && data) {
+			pendingScrollRef.current = false;
+			window.scrollTo({ top: 0, behavior: "instant" });
+		}
+	}, [data]);
 
 	const total = data?.total ?? 0;
 	const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -110,6 +120,7 @@ export default function Home() {
 
 	return (
 		<Layout>
+			<TopProgressBar show={isFetching && isPlaceholderData} />
 			<div className="mb-8 md:mb-12">
 				<h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
 					Latest Admission Dates

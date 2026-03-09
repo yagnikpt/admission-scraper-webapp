@@ -1,4 +1,4 @@
-import { addDays, format, isWithinInterval, parseISO } from "date-fns";
+import { addDays, format, isWithinInterval, parseISO, startOfDay } from "date-fns";
 import { Building, Calendar, ChevronRight, MapPin } from "lucide-react";
 import { Link } from "react-router";
 import { Badge } from "@/components/ui/badge";
@@ -33,10 +33,10 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
 		if (!dateString) return false;
 		try {
 			const deadline = parseISO(dateString);
-			const now = new Date();
+			const today = startOfDay(new Date());
 			return isWithinInterval(deadline, {
-				start: now,
-				end: addDays(now, 7),
+				start: today,
+				end: addDays(today, 7),
 			});
 		} catch {
 			return false;
