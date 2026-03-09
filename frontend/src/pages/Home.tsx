@@ -41,30 +41,48 @@ export default function Home() {
 	);
 
 	const [searchTerm, setSearchTerm] = useState("");
-	const [category, setCategory] = useState<string[]>([]);
-	const [startDate, setStartDate] = useState("");
-	const [endDate, setEndDate] = useState("");
+
+	const category = useMemo(() => {
+		const raw = searchParams.get("category");
+		return raw ? raw.split(",").filter(Boolean) : [];
+	}, [searchParams]);
+	const startDate = searchParams.get("startDate") ?? "";
+	const endDate = searchParams.get("endDate") ?? "";
 
 	const setCategoryAndResetPage = useCallback(
 		(val: string[]) => {
-			setCategory(val);
-			setPage(1);
+			setSearchParams((prev) => {
+				const next = new URLSearchParams(prev);
+				if (val.length) {
+					next.set("category", val.join(","));
+				} else {
+					next.delete("category");
+				}
+				next.delete("page");
+				return next;
+			});
 		},
-		[setPage],
+		[setSearchParams],
 	);
 	const setStartDateAndResetPage = useCallback(
-		(val: string) => {
-			setStartDate(val);
-			setPage(1);
+		(start: string, end: string) => {
+			setSearchParams((prev) => {
+				const next = new URLSearchParams(prev);
+				if (start) {
+					next.set("startDate", start);
+				} else {
+					next.delete("startDate");
+				}
+				if (end) {
+					next.set("endDate", end);
+				} else {
+					next.delete("endDate");
+				}
+				next.delete("page");
+				return next;
+			});
 		},
-		[setPage],
-	);
-	const setEndDateAndResetPage = useCallback(
-		(val: string) => {
-			setEndDate(val);
-			setPage(1);
-		},
-		[setPage],
+		[setSearchParams],
 	);
 
 	const { data, isLoading, isFetching, isPlaceholderData, error } = useAdmissionDates({
@@ -137,9 +155,8 @@ export default function Home() {
 				category={category}
 				setCategory={setCategoryAndResetPage}
 				startDate={startDate}
-				setStartDate={setStartDateAndResetPage}
 				endDate={endDate}
-				setEndDate={setEndDateAndResetPage}
+				setDateRange={setStartDateAndResetPage}
 				resultCount={searchTerm.trim() ? filteredData.length : total}
 			/>
 

@@ -25,9 +25,8 @@ interface FilterBarProps {
 	category: string[];
 	setCategory: (val: string[]) => void;
 	startDate: string;
-	setStartDate: (val: string) => void;
 	endDate: string;
-	setEndDate: (val: string) => void;
+	setDateRange: (start: string, end: string) => void;
 	resultCount: number;
 }
 
@@ -37,9 +36,8 @@ export function FilterBar({
 	category,
 	setCategory,
 	startDate,
-	setStartDate,
 	endDate,
-	setEndDate,
+	setDateRange,
 	resultCount,
 }: FilterBarProps) {
 	const selectedRange: DateRange | undefined =
@@ -52,12 +50,14 @@ export function FilterBar({
 
 	const handleRangeSelect = (range?: DateRange) => {
 		if (!range?.from) {
-			setStartDate("");
-			setEndDate("");
+			setDateRange("", "");
 			return;
 		}
-		setStartDate(format(range.from, "yyyy-MM-dd"));
-		setEndDate(range.to ? format(range.to, "yyyy-MM-dd") : "");
+		if (!range.to) return;
+		setDateRange(
+			format(range.from, "yyyy-MM-dd"),
+			format(range.to, "yyyy-MM-dd"),
+		);
 	};
 
 	function handleCategoryChange(name: string, value: boolean) {
@@ -70,8 +70,7 @@ export function FilterBar({
 
 	const clearFilters = () => {
 		setCategory([]);
-		setStartDate("");
-		setEndDate("");
+		setDateRange("", "");
 	};
 
 	return (
@@ -117,6 +116,7 @@ export function FilterBar({
 									<FieldGroup className="gap-3 flex-row flex-wrap">
 										<Field className="w-fit" orientation="horizontal">
 											<Checkbox
+												checked={category.includes("Undergraduate")}
 												onCheckedChange={(e: boolean) =>
 													handleCategoryChange("Undergraduate", e)
 												}
@@ -132,6 +132,7 @@ export function FilterBar({
 										</Field>
 										<Field className="w-fit" orientation="horizontal">
 											<Checkbox
+												checked={category.includes("Postgraduate")}
 												onCheckedChange={(e: boolean) =>
 													handleCategoryChange("Postgraduate", e)
 												}
@@ -147,6 +148,7 @@ export function FilterBar({
 										</Field>
 										<Field className="w-fit" orientation="horizontal">
 											<Checkbox
+												checked={category.includes("Professional")}
 												onCheckedChange={(e: boolean) =>
 													handleCategoryChange("Professional", e)
 												}
@@ -162,6 +164,7 @@ export function FilterBar({
 										</Field>
 										<Field className="w-fit" orientation="horizontal">
 											<Checkbox
+												checked={category.includes("Diploma")}
 												onCheckedChange={(e: boolean) =>
 													handleCategoryChange("Diploma", e)
 												}
@@ -174,6 +177,7 @@ export function FilterBar({
 										</Field>
 										<Field className="w-fit" orientation="horizontal">
 											<Checkbox
+												checked={category.includes("Doctorate")}
 												onCheckedChange={(e: boolean) =>
 													handleCategoryChange("Doctorate", e)
 												}
