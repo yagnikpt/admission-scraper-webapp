@@ -61,14 +61,19 @@ def create_application() -> FastAPI:
                 name="static-assets",
             )
 
-        # Serve other static files at root (e.g. favicon, vite.svg)
-        @application.get("/vite.svg")
-        @application.get("/favicon.ico")
-        async def static_file(request: Request):
-            file_path = static_dir / request.url.path.lstrip("/")
-            if file_path.is_file():
-                return FileResponse(str(file_path))
-            return HTMLResponse(status_code=404)
+        # Serve all root-level static files (e.g. favicon, vite.svg, og-image.jpg)
+        # Dynamically register routes for every file in the static directory root
+        for static_file_path in static_dir.iterdir():
+            if static_file_path.is_file() and static_file_path.name != "index.html":
+                route_path = f"/{static_file_path.name}"
+
+                def _make_handler(fpath: Path):
+                    async def serve_static_file():
+                        return FileResponse(str(fpath))
+
+                    return serve_static_file
+
+                application.get(route_path)(_make_handler(static_file_path))
 
         # SPA catch-all: serve index.html for client-side routes.
         # This is added as an exception handler so it only fires when

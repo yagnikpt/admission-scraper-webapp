@@ -1,5 +1,5 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import type { z } from "zod";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { z } from "zod";
 import { api, buildUrl } from "@/lib/apiRoutes";
 
 // Log zod parse errors without crashing silently
@@ -10,7 +10,10 @@ function parseWithLogging<T extends z.ZodType>(
 ): z.infer<T> {
 	const result = schema.safeParse(data);
 	if (!result.success) {
-		console.error(`[Zod] ${label} validation failed:`, result.error.format());
+		console.error(
+			`[Zod] ${label} validation failed:`,
+			z.treeifyError(result.error),
+		);
 		throw new Error(`Data validation failed for ${label}`);
 	}
 	return result.data;
