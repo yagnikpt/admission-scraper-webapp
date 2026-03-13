@@ -1,7 +1,7 @@
 import { CalendarX2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
-import { AnnouncementCard } from "@/components/AnnouncementCard";
+import AnnouncementCard from "@/components/AnnouncementCard";
 import { FilterBar } from "@/components/FilterBar";
 import { Layout } from "@/components/Layout";
 import { TopProgressBar } from "@/components/TopProgressBar";
@@ -85,13 +85,14 @@ export default function Home() {
 		[setSearchParams],
 	);
 
-	const { data, isLoading, isFetching, isPlaceholderData, error } = useAdmissionDates({
-		page,
-		limit: PAGE_SIZE,
-		categories: category,
-		startDate,
-		endDate,
-	});
+	const { data, isLoading, isFetching, isPlaceholderData, error } =
+		useAdmissionDates({
+			page,
+			limit: PAGE_SIZE,
+			categories: category,
+			startDate,
+			endDate,
+		});
 
 	// Scroll to top only after new page data has actually loaded
 	useEffect(() => {

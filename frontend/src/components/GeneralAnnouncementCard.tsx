@@ -15,7 +15,7 @@ export function GeneralAnnouncementCard({
 			{/* Institute */}
 			{announcement.institution?.name && (
 				<div className="flex items-center gap-1.5 text-sm font-medium text-accent mb-3">
-					<Building className="w-4 h-4" />
+					<Building className="size-4" />
 					<span>{announcement.institution.name}</span>
 				</div>
 			)}
@@ -55,7 +55,7 @@ export function GeneralAnnouncementCard({
 				<Link to={`/announcements/${announcement.announcement_id}`}>
 					<Button className="w-full group" variant="outline">
 						View Details
-						<ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+						<ChevronRight className="size-4 group-hover:translate-x-1 transition-transform" />
 					</Button>
 				</Link>
 			</div>

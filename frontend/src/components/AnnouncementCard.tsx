@@ -1,16 +1,22 @@
-import { addDays, format, isWithinInterval, parseISO, startOfDay } from "date-fns";
+import {
+	addDays,
+	format,
+	isWithinInterval,
+	parseISO,
+	startOfDay,
+} from "date-fns";
 import { Building, Calendar, ChevronRight, MapPin } from "lucide-react";
 import { Link } from "react-router";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { AnnouncementResponse } from "@/lib/schema";
+import { Badge } from "./ui/badge";
 
 interface AnnouncementCardProps {
 	announcement: AnnouncementResponse;
 }
 
-export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
-	// Determine Degree Level Label
+export default function AnnouncementCard({
+	announcement,
+}: AnnouncementCardProps) {
 	const programs = announcement.programs || [];
 	let degreeLabel = null;
 	if (programs.length === 1 && programs[0].degree_level) {
@@ -19,7 +25,6 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
 		degreeLabel = `${programs.length} Programs`;
 	}
 
-	// Helper to format dates safely
 	const formatDate = (dateString?: string | null) => {
 		if (!dateString) return null;
 		try {
@@ -47,65 +52,61 @@ export function AnnouncementCard({ announcement }: AnnouncementCardProps) {
 	const isSoon = isDeadlineSoon(announcement.application_deadline);
 
 	return (
-		<div className="flex flex-col h-full bg-card rounded-2xl p-6 border border-border/60">
-			{/* Header Info */}
-			<div className="flex justify-between items-start mb-4 gap-4">
-				<div className="flex-1">
+		<div className="flex h-full items-center flex-col p-1 bg-neutral-200 has-[.view-btn:hover]:bg-accent/40 transition-colors rounded-2xl">
+			<div className="flex flex-col flex-1 self-start gap-2 p-4 mb-1 bg-white w-full rounded-xl">
+				<div className="flex justify-between items-center gap-2 mb-2">
 					{announcement.institution?.name && (
-						<div className="flex items-center gap-1.5 text-sm font-medium text-accent mb-2">
-							<Building className="w-4 h-4" />
-							<span>{announcement.institution.name}</span>
+						<div className="flex items-center gap-1.5 text-sm font-semibold text-accent">
+							<Building className="size-4" />
+							<span className="line-clamp-1">
+								{announcement.institution.name}
+							</span>
 						</div>
 					)}
-					<h3 className="font-display text-xl font-bold text-foreground leading-tight line-clamp-2">
+					{degreeLabel && (
+						<Badge
+							variant="secondary"
+							className="whitespace-nowrap shrink-0 font-medium px-2.5 py-1"
+						>
+							{degreeLabel}
+						</Badge>
+					)}
+				</div>
+				<div>
+					<h3 className="font-display text-xl text-pretty font-bold text-foreground leading-tight line-clamp-2">
 						{announcement.title}
 					</h3>
 					{announcement.content && (
-						<p className="mt-2 text-sm text-muted-foreground line-clamp-3 mb-2">
+						<p className="mt-2 text-sm text-pretty text-muted-foreground line-clamp-3 mb-2">
 							{announcement.content}
 						</p>
 					)}
 				</div>
-				{degreeLabel && (
-					<Badge
-						variant="secondary"
-						className="whitespace-nowrap font-medium px-2.5 py-1"
-					>
-						{degreeLabel}
-					</Badge>
-				)}
+				<div className="flex-1" />
+				<div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-sm text-muted-foreground">
+					{announcement.state && (
+						<div className="flex items-center gap-1.5">
+							<MapPin className="size-4" />
+							<span>{announcement.state.name}</span>
+						</div>
+					)}
+					{deadlineDate && (
+						<div
+							className={`flex items-center gap-1.5 font-medium ${isSoon ? "text-destructive" : "text-muted-foreground"}`}
+						>
+							<Calendar className="w-4 h-4" />
+							<span>Deadline: {deadlineDate}</span>
+						</div>
+					)}
+				</div>
 			</div>
-
-			{/* Spacer to push button to bottom */}
-			<div className="grow" />
-
-			{/* Meta details */}
-			<div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-sm text-muted-foreground">
-				{announcement.state && (
-					<div className="flex items-center gap-1.5">
-						<MapPin className="w-4 h-4" />
-						<span>{announcement.state.name}</span>
-					</div>
-				)}
-				{deadlineDate && (
-					<div
-						className={`flex items-center gap-1.5 font-medium ${isSoon ? "text-destructive" : "text-muted-foreground"}`}
-					>
-						<Calendar className="w-4 h-4" />
-						<span>Deadline: {deadlineDate}</span>
-					</div>
-				)}
-			</div>
-
-			{/* Actions */}
-			<div className="pt-4 border-t border-border/40 mt-auto">
-				<Link to={`/announcements/${announcement.announcement_id}`}>
-					<Button className="w-full group" variant="default">
-						View Details
-						<ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-					</Button>
-				</Link>
-			</div>
+			<Link
+				className="flex gap-1 items-center justify-center w-full group py-2 text-sm font-medium view-btn"
+				to={`/announcements/${announcement.announcement_id}`}
+			>
+				View Details
+				<ChevronRight className="size-4 group-hover:translate-x-1 transition-transform" />
+			</Link>
 		</div>
 	);
 }
