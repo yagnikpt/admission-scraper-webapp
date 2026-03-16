@@ -1,7 +1,7 @@
 import { FileX2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
-import { FilterBar } from "@/components/FilterBar";
+import { GeneralFilterBar } from "@/components/GeneralFilterBar";
 import { GeneralAnnouncementCard } from "@/components/GeneralAnnouncementCard";
 import { Layout } from "@/components/Layout";
 import { TopProgressBar } from "@/components/TopProgressBar";
@@ -46,8 +46,14 @@ export default function GeneralAnnouncements() {
 		const raw = searchParams.get("category");
 		return raw ? raw.split(",").filter(Boolean) : [];
 	}, [searchParams]);
-	const startDate = searchParams.get("startDate") ?? "";
-	const endDate = searchParams.get("endDate") ?? "";
+	const tagIds = useMemo(() => {
+		const raw = searchParams.get("tagIds");
+		return raw ? raw.split(",").filter(Boolean) : [];
+	}, [searchParams]);
+	const stateIds = useMemo(() => {
+		const raw = searchParams.get("stateIds");
+		return raw ? raw.split(",").filter(Boolean) : [];
+	}, [searchParams]);
 
 	const setCategoryAndResetPage = useCallback(
 		(val: string[]) => {
@@ -64,19 +70,29 @@ export default function GeneralAnnouncements() {
 		},
 		[setSearchParams],
 	);
-	const setStartDateAndResetPage = useCallback(
-		(start: string, end: string) => {
+	const setTagIdsAndResetPage = useCallback(
+		(val: string[]) => {
 			setSearchParams((prev) => {
 				const next = new URLSearchParams(prev);
-				if (start) {
-					next.set("startDate", start);
+				if (val.length) {
+					next.set("tagIds", val.join(","));
 				} else {
-					next.delete("startDate");
+					next.delete("tagIds");
 				}
-				if (end) {
-					next.set("endDate", end);
+				next.delete("page");
+				return next;
+			});
+		},
+		[setSearchParams],
+	);
+	const setStateIdsAndResetPage = useCallback(
+		(val: string[]) => {
+			setSearchParams((prev) => {
+				const next = new URLSearchParams(prev);
+				if (val.length) {
+					next.set("stateIds", val.join(","));
 				} else {
-					next.delete("endDate");
+					next.delete("stateIds");
 				}
 				next.delete("page");
 				return next;
@@ -85,12 +101,23 @@ export default function GeneralAnnouncements() {
 		[setSearchParams],
 	);
 
+	const clearAllFilters = useCallback(() => {
+		setSearchParams((prev) => {
+			const next = new URLSearchParams(prev);
+			next.delete("category");
+			next.delete("tagIds");
+			next.delete("stateIds");
+			next.delete("page");
+			return next;
+		});
+	}, [setSearchParams]);
+
 	const { data, isLoading, isFetching, isPlaceholderData, error } = useAnnouncements({
 		page,
 		limit: PAGE_SIZE,
 		categories: category,
-		startDate,
-		endDate,
+		stateIds,
+		tagIds,
 	});
 
 	// Scroll to top only after new page data has actually loaded
@@ -149,14 +176,16 @@ export default function GeneralAnnouncements() {
 				</p>
 			</div>
 
-			<FilterBar
+			<GeneralFilterBar
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
 				category={category}
 				setCategory={setCategoryAndResetPage}
-				startDate={startDate}
-				endDate={endDate}
-				setDateRange={setStartDateAndResetPage}
+				tagIds={tagIds}
+				setTagIds={setTagIdsAndResetPage}
+				stateIds={stateIds}
+				setStateIds={setStateIdsAndResetPage}
+				clearAllFilters={clearAllFilters}
 				resultCount={searchTerm.trim() ? filteredData.length : total}
 			/>
 

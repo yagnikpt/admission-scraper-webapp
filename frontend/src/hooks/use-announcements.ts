@@ -42,6 +42,7 @@ export function useAdmissionDates(params?: {
 	categories?: string[];
 	startDate?: string;
 	endDate?: string;
+	stateIds?: string[];
 }) {
 	return useQuery({
 		queryKey: [api.announcements.admissionDates.path, params],
@@ -55,6 +56,9 @@ export function useAdmissionDates(params?: {
 					: undefined,
 				start_date: params?.startDate,
 				end_date: params?.endDate,
+				state_ids: params?.stateIds?.length
+					? params.stateIds.join(",")
+					: undefined,
 			});
 
 			const res = await fetch(url);
@@ -78,6 +82,8 @@ export function useAnnouncements(params?: {
 	categories?: string[];
 	startDate?: string;
 	endDate?: string;
+	stateIds?: string[];
+	tagIds?: string[];
 }) {
 	return useQuery({
 		queryKey: [api.announcements.list.path, params],
@@ -91,6 +97,12 @@ export function useAnnouncements(params?: {
 					: undefined,
 				start_date: params?.startDate,
 				end_date: params?.endDate,
+				state_ids: params?.stateIds?.length
+					? params.stateIds.join(",")
+					: undefined,
+				tag_ids: params?.tagIds?.length
+					? params.tagIds.join(",")
+					: undefined,
 			});
 
 			const res = await fetch(url);
@@ -142,5 +154,41 @@ export function useLastScraped() {
 				"meta.lastScraped",
 			);
 		},
+	});
+}
+
+export function useStates() {
+	return useQuery({
+		queryKey: [api.states.list.path],
+		queryFn: async () => {
+			const res = await fetch(api.states.list.path);
+			if (!res.ok) throw new Error("Failed to fetch states");
+
+			const data = await res.json();
+			return parseWithLogging(
+				api.states.list.responses[200],
+				data,
+				"states.list",
+			);
+		},
+		staleTime: 1000 * 60 * 30, // 30 minutes
+	});
+}
+
+export function useTags() {
+	return useQuery({
+		queryKey: [api.tags.list.path],
+		queryFn: async () => {
+			const res = await fetch(api.tags.list.path);
+			if (!res.ok) throw new Error("Failed to fetch tags");
+
+			const data = await res.json();
+			return parseWithLogging(
+				api.tags.list.responses[200],
+				data,
+				"tags.list",
+			);
+		},
+		staleTime: 1000 * 60 * 30, // 30 minutes
 	});
 }

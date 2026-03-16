@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AnnouncementResponseSchema, LastScrapedResponseSchema, PaginatedAnnouncementResponseSchema } from "./schema";
+import { AnnouncementResponseSchema, LastScrapedResponseSchema, PaginatedAnnouncementResponseSchema, StateResponseSchema, TagResponseSchema } from "./schema";
 
 export const errorSchemas = {
 	validation: z.object({
@@ -50,6 +50,24 @@ export const api = {
 			responses: {
 				200: AnnouncementResponseSchema,
 				404: errorSchemas.notFound,
+			},
+		},
+	},
+	states: {
+		list: {
+			method: "GET" as const,
+			path: "/api/states" as const,
+			responses: {
+				200: z.array(StateResponseSchema),
+			},
+		},
+	},
+	tags: {
+		list: {
+			method: "GET" as const,
+			path: "/api/tags" as const,
+			responses: {
+				200: z.array(TagResponseSchema),
 			},
 		},
 	},

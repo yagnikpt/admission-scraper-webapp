@@ -2,7 +2,7 @@ import { CalendarX2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import AnnouncementCard from "@/components/AnnouncementCard";
-import { FilterBar } from "@/components/FilterBar";
+import { HomeFilterBar } from "@/components/HomeFilterBar";
 import { Layout } from "@/components/Layout";
 import { TopProgressBar } from "@/components/TopProgressBar";
 import {
@@ -48,6 +48,10 @@ export default function Home() {
 	}, [searchParams]);
 	const startDate = searchParams.get("startDate") ?? "";
 	const endDate = searchParams.get("endDate") ?? "";
+	const stateIds = useMemo(() => {
+		const raw = searchParams.get("stateIds");
+		return raw ? raw.split(",").filter(Boolean) : [];
+	}, [searchParams]);
 
 	const setCategoryAndResetPage = useCallback(
 		(val: string[]) => {
@@ -84,6 +88,33 @@ export default function Home() {
 		},
 		[setSearchParams],
 	);
+	const setStateIdsAndResetPage = useCallback(
+		(val: string[]) => {
+			setSearchParams((prev) => {
+				const next = new URLSearchParams(prev);
+				if (val.length) {
+					next.set("stateIds", val.join(","));
+				} else {
+					next.delete("stateIds");
+				}
+				next.delete("page");
+				return next;
+			});
+		},
+		[setSearchParams],
+	);
+
+	const clearAllFilters = useCallback(() => {
+		setSearchParams((prev) => {
+			const next = new URLSearchParams(prev);
+			next.delete("category");
+			next.delete("startDate");
+			next.delete("endDate");
+			next.delete("stateIds");
+			next.delete("page");
+			return next;
+		});
+	}, [setSearchParams]);
 
 	const { data, isLoading, isFetching, isPlaceholderData, error } =
 		useAdmissionDates({
@@ -92,6 +123,7 @@ export default function Home() {
 			categories: category,
 			startDate,
 			endDate,
+			stateIds,
 		});
 
 	// Scroll to top only after new page data has actually loaded
@@ -150,7 +182,7 @@ export default function Home() {
 				</p>
 			</div>
 
-			<FilterBar
+			<HomeFilterBar
 				searchTerm={searchTerm}
 				setSearchTerm={setSearchTerm}
 				category={category}
@@ -158,6 +190,9 @@ export default function Home() {
 				startDate={startDate}
 				endDate={endDate}
 				setDateRange={setStartDateAndResetPage}
+				stateIds={stateIds}
+				setStateIds={setStateIdsAndResetPage}
+				clearAllFilters={clearAllFilters}
 				resultCount={searchTerm.trim() ? filteredData.length : total}
 			/>
 

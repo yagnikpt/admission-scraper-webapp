@@ -9,7 +9,7 @@ from sqlalchemy import case
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.sql.expression import func
 
-from app.db.models import Announcement, Program
+from app.db.models import Announcement, Program, Tag
 from app.db.session import get_db
 from app.schemas.announcement import AnnouncementResponse, PaginatedAnnouncementResponse
 
@@ -33,6 +33,14 @@ def get_announcements(
     end_date: Optional[str] = Query(
         None,
         description="Filter by application_deadline <= YYYY-MM-DD",
+    ),
+    state_ids: Optional[List[str]] = Query(
+        None,
+        description="Filter by state UUIDs (comma-separated or repeated)",
+    ),
+    tag_ids: Optional[List[str]] = Query(
+        None,
+        description="Filter by tag UUIDs (comma-separated or repeated)",
     ),
 ):
     """
@@ -87,6 +95,32 @@ def get_announcements(
             base_query = base_query.filter(
                 Announcement.application_deadline <= end_date_parsed
             )
+
+        # Filter by state IDs
+        if state_ids:
+            normalized_state_ids: List[str] = []
+            for value in state_ids:
+                normalized_state_ids.extend(
+                    [part.strip() for part in value.split(",") if part.strip()]
+                )
+            if normalized_state_ids:
+                base_query = base_query.filter(
+                    Announcement.state_id.in_(normalized_state_ids)
+                )
+
+        # Filter by tag IDs
+        if tag_ids:
+            normalized_tag_ids: List[str] = []
+            for value in tag_ids:
+                normalized_tag_ids.extend(
+                    [part.strip() for part in value.split(",") if part.strip()]
+                )
+            if normalized_tag_ids:
+                base_query = base_query.filter(
+                    Announcement.tags.any(
+                        Tag.tag_id.in_(normalized_tag_ids)
+                    )
+                )
 
         # Get total count before pagination
         total = base_query.count()
@@ -159,6 +193,10 @@ def get_admission_dates_announcements(
         None,
         description="Filter by application_deadline <= YYYY-MM-DD",
     ),
+    state_ids: Optional[List[str]] = Query(
+        None,
+        description="Filter by state UUIDs (comma-separated or repeated)",
+    ),
 ):
     """
     Retrieve announcements with announcement_type="admission_dates"
@@ -213,6 +251,18 @@ def get_admission_dates_announcements(
             base_query = base_query.filter(
                 Announcement.application_deadline <= end_date_parsed
             )
+
+        # Filter by state IDs
+        if state_ids:
+            normalized_state_ids: List[str] = []
+            for value in state_ids:
+                normalized_state_ids.extend(
+                    [part.strip() for part in value.split(",") if part.strip()]
+                )
+            if normalized_state_ids:
+                base_query = base_query.filter(
+                    Announcement.state_id.in_(normalized_state_ids)
+                )
 
         # Get total count before pagination
         total = base_query.count()
