@@ -113,12 +113,23 @@ export default function AnnouncementDetails() {
 						</h1>
 
 						<div className="flex flex-col sm:flex-row gap-6 text-primary-foreground/80 font-medium">
-							{announcement.institution?.name && (
-								<div className="flex items-center gap-2">
-									<Building className="w-5 h-5" />
-									{announcement.institution.name}
-								</div>
-							)}
+							{announcement.institution?.name &&
+								(announcement.institution.website ? (
+									<a
+										href={announcement.institution.website}
+										target="_blank"
+										rel="noreferrer"
+										className="flex items-center gap-2"
+									>
+										<Building className="w-5 h-5" />
+										{announcement.institution.name}
+									</a>
+								) : (
+									<div className="flex items-center gap-2">
+										<Building className="w-5 h-5" />
+										{announcement.institution.name}
+									</div>
+								))}
 							{announcement.state?.name && (
 								<div className="flex items-center gap-2">
 									<MapPin className="w-5 h-5" />
@@ -135,14 +146,18 @@ export default function AnnouncementDetails() {
 							<div className="flex items-center justify-between p-4 bg-accent/5 border border-accent/20 rounded-2xl mb-10">
 								<div className="flex items-center gap-3 text-accent font-medium text-xs md:text-base">
 									<LinkIcon className="size-5" />
-									<span>Official Application Portal</span>
+									<span>Official Information Source</span>
 								</div>
 								<Button
-									onClick={() => window.open(announcement.url, "_blank")}
+									asChild
 									className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-lg shadow-accent/20 rounded-lg"
 								>
-									Visit Website
-									<ExternalLink className="size-4 ml-2" />
+									<a target="_blank" rel="noreferrer" href={announcement.url}>
+										{announcement.url.endsWith(".pdf")
+											? "Open PDF"
+											: "Visit Website"}
+										<ExternalLink className="size-4 ml-2" />
+									</a>
 								</Button>
 							</div>
 						)}
