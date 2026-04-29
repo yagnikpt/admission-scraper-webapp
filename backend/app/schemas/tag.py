@@ -1,7 +1,7 @@
 """Schema models for Tag data."""
 
-from typing import Optional
 from uuid import UUID
+
 from pydantic import BaseModel
 
 

@@ -5,6 +5,7 @@ description = "A RESTful API for accessing admission announcements and related p
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.18.4",
     "fastapi[standard]>=0.115.12",
     "psycopg2-binary>=2.9.11",
     "python-dotenv>=1.1.0",
