@@ -1,7 +1,7 @@
 """Direct PostgreSQL connection helper for production environments."""
 
 import socket
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from sqlalchemy import create_engine, event
 
@@ -19,7 +19,7 @@ def _sanitize_db_url(db_url: str) -> str:
     return urlunparse(parsed._replace(query=cleaned_query))
 
 
-def get_production_engine(db_url):
+def get_production_engine(db_url: str):
     """
     Create a production-ready SQLAlchemy engine with optimized settings
     specifically for render.com and Neon.

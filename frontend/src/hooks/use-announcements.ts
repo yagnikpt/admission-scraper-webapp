@@ -43,6 +43,7 @@ export function useAdmissionDates(params?: {
 	startDate?: string;
 	endDate?: string;
 	stateIds?: string[];
+	hasDeadline?: boolean;
 }) {
 	return useQuery({
 		queryKey: [api.announcements.admissionDates.path, params],
@@ -51,6 +52,7 @@ export function useAdmissionDates(params?: {
 				page: params?.page,
 				limit: params?.limit,
 				randomize: params?.randomize,
+				has_deadline: params?.hasDeadline,
 				categories: params?.categories?.length
 					? params.categories.join(",")
 					: undefined,
@@ -113,6 +115,90 @@ export function useAnnouncements(params?: {
 				api.announcements.list.responses[200],
 				data,
 				"announcements.list",
+			);
+		},
+		placeholderData: keepPreviousData,
+	});
+}
+
+export function useExamInfoAnnouncements(params?: {
+	page?: number;
+	limit?: number;
+	randomize?: boolean;
+	categories?: string[];
+	startDate?: string;
+	endDate?: string;
+	stateIds?: string[];
+	hasDeadline?: boolean;
+}) {
+	return useQuery({
+		queryKey: [api.announcements.examInfo.path, params],
+		queryFn: async () => {
+			const url = buildQueryString(api.announcements.examInfo.path, {
+				page: params?.page,
+				limit: params?.limit,
+				randomize: params?.randomize,
+				has_deadline: params?.hasDeadline,
+				categories: params?.categories?.length
+					? params.categories.join(",")
+					: undefined,
+				start_date: params?.startDate,
+				end_date: params?.endDate,
+				state_ids: params?.stateIds?.length
+					? params.stateIds.join(",")
+					: undefined,
+			});
+
+			const res = await fetch(url);
+			if (!res.ok) throw new Error("Failed to fetch exam info announcements");
+
+			const data = await res.json();
+			return parseWithLogging(
+				api.announcements.examInfo.responses[200],
+				data,
+				"announcements.examInfo",
+			);
+		},
+		placeholderData: keepPreviousData,
+	});
+}
+
+export function useResultInfoAnnouncements(params?: {
+	page?: number;
+	limit?: number;
+	randomize?: boolean;
+	categories?: string[];
+	startDate?: string;
+	endDate?: string;
+	stateIds?: string[];
+	hasDeadline?: boolean;
+}) {
+	return useQuery({
+		queryKey: [api.announcements.resultInfo.path, params],
+		queryFn: async () => {
+			const url = buildQueryString(api.announcements.resultInfo.path, {
+				page: params?.page,
+				limit: params?.limit,
+				randomize: params?.randomize,
+				has_deadline: params?.hasDeadline,
+				categories: params?.categories?.length
+					? params.categories.join(",")
+					: undefined,
+				start_date: params?.startDate,
+				end_date: params?.endDate,
+				state_ids: params?.stateIds?.length
+					? params.stateIds.join(",")
+					: undefined,
+			});
+
+			const res = await fetch(url);
+			if (!res.ok) throw new Error("Failed to fetch result info announcements");
+
+			const data = await res.json();
+			return parseWithLogging(
+				api.announcements.resultInfo.responses[200],
+				data,
+				"announcements.resultInfo",
 			);
 		},
 		placeholderData: keepPreviousData,

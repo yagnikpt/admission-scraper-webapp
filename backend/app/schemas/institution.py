@@ -1,7 +1,7 @@
 """Schema models for Institution and State data."""
 
-from typing import Optional
 from uuid import UUID
+
 from pydantic import BaseModel
 
 
@@ -26,15 +26,15 @@ class InstitutionBase(BaseModel):
 
     name: str
     website: str
-    description: Optional[str] = None
-    state_id: Optional[UUID] = None
+    description: str | None = None
+    state_id: UUID | None = None
 
 
 class InstitutionResponse(InstitutionBase):
     """Schema for responding with Institution data."""
 
     institution_id: UUID
-    state: Optional[StateResponse] = None
+    state: StateResponse | None = None
 
     class Config:
         from_attributes = True

@@ -3,12 +3,13 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from dotenv import load_dotenv
-from app.api.api import api_router
+
+from .api.api import api_router
 
 # Resolve the frontend dist directory.
 # In Docker, the built frontend is copied to /code/static.

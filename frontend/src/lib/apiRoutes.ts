@@ -38,6 +38,37 @@ export const api = {
 					limit: z.number().optional(),
 					page: z.number().optional(),
 					randomize: z.boolean().optional(),
+					has_deadline: z.boolean().optional(),
+				})
+				.optional(),
+			responses: {
+				200: PaginatedAnnouncementResponseSchema,
+			},
+		},
+		examInfo: {
+			method: "GET" as const,
+			path: "/api/announcements/exam-info" as const,
+			input: z
+				.object({
+					limit: z.number().optional(),
+					page: z.number().optional(),
+					randomize: z.boolean().optional(),
+					has_deadline: z.boolean().optional(),
+				})
+				.optional(),
+			responses: {
+				200: PaginatedAnnouncementResponseSchema,
+			},
+		},
+		resultInfo: {
+			method: "GET" as const,
+			path: "/api/announcements/result-info" as const,
+			input: z
+				.object({
+					limit: z.number().optional(),
+					page: z.number().optional(),
+					randomize: z.boolean().optional(),
+					has_deadline: z.boolean().optional(),
 				})
 				.optional(),
 			responses: {

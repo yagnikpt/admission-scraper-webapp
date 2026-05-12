@@ -5,10 +5,12 @@ import uuid
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.util.typing import final
 
-from app.db.session import Base
+from .session import Base
 
 
+@final
 class State(Base):
     """Database model for states."""
 
@@ -22,6 +24,7 @@ class State(Base):
     announcements = relationship("Announcement", back_populates="state")
 
 
+@final
 class Institution(Base):
     """Database model for institutions."""
 
@@ -39,6 +42,7 @@ class Institution(Base):
     announcements = relationship("Announcement", back_populates="institution")
 
 
+@final
 class Program(Base):
     """Database model for programs."""
 
@@ -57,6 +61,7 @@ class Program(Base):
     )
 
 
+@final
 class Tag(Base):
     """Database model for tags."""
 
@@ -70,6 +75,7 @@ class Tag(Base):
     )
 
 
+@final
 class Announcement(Base):
     """Database model for announcements."""
 
@@ -109,6 +115,7 @@ class Announcement(Base):
     scraped_page = relationship("ScrapedPage", back_populates="announcements")
 
 
+@final
 class ProgramAnnouncement(Base):
     """Database model for the program_announcements junction table."""
 
@@ -124,6 +131,7 @@ class ProgramAnnouncement(Base):
     )
 
 
+@final
 class AnnouncementTag(Base):
     """Database model for the announcement_tags junction table."""
 
@@ -141,6 +149,7 @@ class AnnouncementTag(Base):
     )
 
 
+@final
 class ScrapedPage(Base):
     """Database model for scraped pages tracking."""
 

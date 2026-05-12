@@ -1,13 +1,13 @@
 """Schema models for Announcement data."""
 
-from typing import Optional, List
 from datetime import date
 from uuid import UUID
+
 from pydantic import BaseModel
 
-from app.schemas.program import ProgramResponse
-from app.schemas.institution import InstitutionResponse, StateResponse
-from app.schemas.tag import TagResponse
+from .institution import InstitutionResponse, StateResponse
+from .program import ProgramResponse
+from .tag import TagResponse
 
 
 class AnnouncementBase(BaseModel):
@@ -16,14 +16,14 @@ class AnnouncementBase(BaseModel):
     title: str
     content: str
     url: str
-    institution_id: Optional[UUID] = None
-    state_id: Optional[UUID] = None
-    published_date: Optional[date] = None
-    application_open_date: Optional[date] = None
-    application_deadline: Optional[date] = None
-    term: Optional[str] = None
-    contact_info: Optional[str] = None
-    announcement_type: Optional[str] = None
+    institution_id: UUID | None = None
+    state_id: UUID | None = None
+    published_date: date | None = None
+    application_open_date: date | None = None
+    application_deadline: date | None = None
+    term: str | None = None
+    contact_info: str | None = None
+    announcement_type: str | None = None
 
 
 class AnnouncementCreate(AnnouncementBase):
@@ -36,10 +36,10 @@ class AnnouncementResponse(AnnouncementBase):
     """Schema for responding with Announcement data."""
 
     announcement_id: UUID
-    programs: List[ProgramResponse] = []
-    institution: Optional[InstitutionResponse] = None
-    state: Optional[StateResponse] = None
-    tags: List[TagResponse] = []  # Add tags to the response
+    programs: list[ProgramResponse] = []
+    institution: InstitutionResponse | None = None
+    state: StateResponse | None = None
+    tags: list[TagResponse] = []  # Add tags to the response
 
     class Config:
         from_attributes = True
@@ -48,7 +48,7 @@ class AnnouncementResponse(AnnouncementBase):
 class PaginatedAnnouncementResponse(BaseModel):
     """Paginated wrapper for announcement lists."""
 
-    items: List[AnnouncementResponse]
+    items: list[AnnouncementResponse]
     total: int
     page: int
     limit: int

@@ -24,6 +24,7 @@ import {
 	FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
 	Popover,
 	PopoverContent,
@@ -43,6 +44,9 @@ interface HomeFilterBarProps {
 	setDateRange: (start: string, end: string) => void;
 	stateIds: string[];
 	setStateIds: (val: string[]) => void;
+	onlyWithDeadline?: boolean;
+	setOnlyWithDeadline?: (value: boolean) => void;
+	showDeadlineFilter?: boolean;
 	clearAllFilters: () => void;
 	resultCount: number;
 }
@@ -57,6 +61,9 @@ export function HomeFilterBar({
 	setDateRange,
 	stateIds,
 	setStateIds,
+	onlyWithDeadline = false,
+	setOnlyWithDeadline,
+	showDeadlineFilter = true,
 	clearAllFilters,
 	resultCount,
 }: HomeFilterBarProps) {
@@ -99,7 +106,11 @@ export function HomeFilterBar({
 	}, [allStates, stateIds]);
 
 	const hasFilters =
-		category.length > 0 || startDate || endDate || stateIds.length > 0;
+		category.length > 0 ||
+		startDate ||
+		endDate ||
+		stateIds.length > 0 ||
+		(showDeadlineFilter && onlyWithDeadline);
 
 	return (
 		<div className="bg-card has-focus-visible:ring-3 has-focus-visible:ring-ring/50 transition-[color,box-shadow] rounded-2xl p-2 border border-border/60 shadow-sm mb-8 flex flex-col gap-4">
@@ -139,7 +150,8 @@ export function HomeFilterBar({
 									<span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
 										{category.length +
 											(startDate || endDate ? 1 : 0) +
-											stateIds.length}
+											stateIds.length +
+											(showDeadlineFilter && onlyWithDeadline ? 1 : 0)}
 									</span>
 								)}
 							</Button>
@@ -216,6 +228,21 @@ export function HomeFilterBar({
 										</PopoverContent>
 									</Popover>
 								</Field>
+
+								{showDeadlineFilter && (
+									<Field orientation="horizontal" className="justify-between">
+										<FieldLabel htmlFor="only-with-deadline">
+											Only show items with deadline
+										</FieldLabel>
+										<Switch
+											id="only-with-deadline"
+											checked={onlyWithDeadline}
+											onCheckedChange={(checked) =>
+												setOnlyWithDeadline?.(checked)
+											}
+										/>
+									</Field>
+								)}
 
 								<Field>
 									<FieldLabel>State</FieldLabel>

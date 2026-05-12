@@ -1,13 +1,39 @@
 import { formatDistanceToNow } from "date-fns";
-import { Bell, Clock, GraduationCap, Menu, X } from "lucide-react";
+import {
+	Bell,
+	CircleAlert,
+	Clock,
+	FileCheck2,
+	FileSearch,
+	GraduationCap,
+	Info,
+	Menu,
+	X,
+} from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router";
 import { Button } from "@/components/ui/button";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import { useLastScraped } from "@/hooks/use-announcements";
 
 interface LayoutProps {
 	children: React.ReactNode;
 }
+
+const NAV_ITEMS = [
+	{ label: "Admission Dates", path: "/", icon: GraduationCap },
+	{ label: "Exam Info", path: "/announcements/exam-info", icon: FileSearch },
+	{
+		label: "Result Info",
+		path: "/announcements/result-info",
+		icon: FileCheck2,
+	},
+	{ label: "General", path: "/announcements", icon: Bell },
+];
 
 export function Layout({ children }: LayoutProps) {
 	const location = useLocation();
@@ -20,18 +46,22 @@ export function Layout({ children }: LayoutProps) {
 			})
 		: null;
 
-	const navItems = [
-		{ label: "Admission Dates", path: "/", icon: GraduationCap },
-		{ label: "General Announcements", path: "/announcements", icon: Bell },
-	];
+	const isItemActive = (path: string) => {
+		if (path === "/") return location.pathname === "/";
+		if (path === "/announcements") {
+			return (
+				location.pathname === "/announcements" ||
+				/^\/announcements\/[0-9a-fA-F-]{36}$/.test(location.pathname)
+			);
+		}
+		return location.pathname === path;
+	};
 
 	return (
 		<div className="min-h-screen flex flex-col selection:bg-accent/20">
-			{/* Top Navigation */}
 			<header className="sticky top-0 z-50 glass-nav">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="flex justify-between items-center h-16">
-						{/* Logo */}
 						<div className="shrink-0 flex items-center gap-2">
 							<div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
 								<GraduationCap className="w-5 h-5 text-primary-foreground" />
@@ -44,10 +74,9 @@ export function Layout({ children }: LayoutProps) {
 							</Link>
 						</div>
 
-						{/* Desktop Navigation */}
 						<nav className="hidden md:flex items-center space-x-1">
-							{navItems.map((item) => {
-								const isActive = location.pathname === item.path;
+							{NAV_ITEMS.map((item) => {
+								const isActive = isItemActive(item.path);
 								return (
 									<Link
 										key={item.path}
@@ -67,15 +96,38 @@ export function Layout({ children }: LayoutProps) {
 									</Link>
 								);
 							})}
-							{lastScrapedLabel && (
-								<span className="ml-2 px-3 py-1.5 rounded-full text-xs text-muted-foreground bg-secondary/50 flex items-center gap-1.5">
-									<Clock className="w-3 h-3" />
-									Last scraped {lastScrapedLabel}
-								</span>
-							)}
+
+							<Popover>
+								<PopoverTrigger asChild>
+									<Button variant="ghost" size="icon" aria-label="Open notices">
+										<Info className="w-4 h-4" />
+									</Button>
+								</PopoverTrigger>
+								<PopoverContent align="end" className="w-80 space-y-3">
+									<div>
+										<p className="text-sm font-semibold">Status & Notices</p>
+										<p className="text-xs text-muted-foreground mt-1">
+											Additional operational info for this scraper.
+										</p>
+									</div>
+									<div className="rounded-lg border border-border/60 p-3 text-sm space-y-2">
+										<div className="flex items-center gap-2 text-muted-foreground">
+											<Clock className="w-4 h-4" />
+											<span>
+												Last scraped {lastScrapedLabel ?? "not available"}.
+											</span>
+										</div>
+										<div className="flex items-start gap-2 text-muted-foreground">
+											<CircleAlert className="w-4 h-4 shrink-0" />
+											<span>
+												The data is only scraped for Gujarat state right now.
+											</span>
+										</div>
+									</div>
+								</PopoverContent>
+							</Popover>
 						</nav>
 
-						{/* Mobile menu button */}
 						<div className="md:hidden flex items-center">
 							<Button
 								variant="ghost"
@@ -93,12 +145,11 @@ export function Layout({ children }: LayoutProps) {
 					</div>
 				</div>
 
-				{/* Mobile Navigation Dropdown */}
 				{mobileMenuOpen && (
 					<div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-lg">
 						<div className="px-4 pt-2 pb-3 space-y-1 sm:px-3">
-							{navItems.map((item) => {
-								const isActive = location.pathname === item.path;
+							{NAV_ITEMS.map((item) => {
+								const isActive = isItemActive(item.path);
 								return (
 									<Link
 										key={item.path}
@@ -120,18 +171,20 @@ export function Layout({ children }: LayoutProps) {
 									</Link>
 								);
 							})}
-							{lastScrapedLabel && (
-								<div className="px-3 py-2 flex items-center gap-2 text-xs text-muted-foreground">
-									<Clock className="w-3 h-3" />
-									Last scraped {lastScrapedLabel}
+							<div className="px-3 py-2 flex items-start gap-2 text-xs text-muted-foreground">
+								<Clock className="w-3 h-3 mt-0.5" />
+								<div>
+									<div>Last scraped {lastScrapedLabel ?? "not available"}.</div>
+									<div className="mt-1">
+										The data is only scraped for Gujarat state right now.
+									</div>
 								</div>
-							)}
+							</div>
 						</div>
 					</div>
 				)}
 			</header>
 
-			{/* Main Content */}
 			<main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 				{children}
 			</main>

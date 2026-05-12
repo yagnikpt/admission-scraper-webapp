@@ -1,4 +1,4 @@
-import { CalendarX2 } from "lucide-react";
+import { FileX2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import AnnouncementCard from "@/components/AnnouncementCard";
@@ -15,11 +15,11 @@ import {
 	PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAdmissionDates } from "@/hooks/use-announcements";
+import { useResultInfoAnnouncements } from "@/hooks/use-announcements";
 
 const PAGE_SIZE = 20;
 
-export default function Home() {
+export default function ResultInfoAnnouncements() {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const page = Math.max(1, Number(searchParams.get("page")) || 1);
 	const pendingScrollRef = useRef(false);
@@ -52,7 +52,6 @@ export default function Home() {
 		const raw = searchParams.get("stateIds");
 		return raw ? raw.split(",").filter(Boolean) : [];
 	}, [searchParams]);
-	const onlyWithDeadline = searchParams.get("hasDeadline") === "1";
 
 	const setCategoryAndResetPage = useCallback(
 		(val: string[]) => {
@@ -104,23 +103,6 @@ export default function Home() {
 		},
 		[setSearchParams],
 	);
-
-	const setOnlyWithDeadlineAndResetPage = useCallback(
-		(value: boolean) => {
-			setSearchParams((prev) => {
-				const next = new URLSearchParams(prev);
-				if (value) {
-					next.set("hasDeadline", "1");
-				} else {
-					next.delete("hasDeadline");
-				}
-				next.delete("page");
-				return next;
-			});
-		},
-		[setSearchParams],
-	);
-
 	const clearAllFilters = useCallback(() => {
 		setSearchParams((prev) => {
 			const next = new URLSearchParams(prev);
@@ -128,24 +110,21 @@ export default function Home() {
 			next.delete("startDate");
 			next.delete("endDate");
 			next.delete("stateIds");
-			next.delete("hasDeadline");
 			next.delete("page");
 			return next;
 		});
 	}, [setSearchParams]);
 
 	const { data, isLoading, isFetching, isPlaceholderData, error } =
-		useAdmissionDates({
+		useResultInfoAnnouncements({
 			page,
 			limit: PAGE_SIZE,
 			categories: category,
 			startDate,
 			endDate,
 			stateIds,
-			hasDeadline: onlyWithDeadline,
 		});
 
-	// Scroll to top only after new page data has actually loaded
 	useEffect(() => {
 		if (pendingScrollRef.current && data) {
 			pendingScrollRef.current = false;
@@ -193,11 +172,10 @@ export default function Home() {
 			<TopProgressBar show={isFetching && isPlaceholderData} />
 			<div className="mb-8 md:mb-12">
 				<h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-					Latest Admission Dates
+					Result Information
 				</h1>
 				<p className="md:text-lg text-muted-foreground max-w-2xl">
-					Stay on top of upcoming application deadlines, term openings, and
-					critical academic dates from top institutions.
+					Track result publication updates and related announcements.
 				</p>
 			</div>
 
@@ -211,8 +189,7 @@ export default function Home() {
 				setDateRange={setStartDateAndResetPage}
 				stateIds={stateIds}
 				setStateIds={setStateIdsAndResetPage}
-				onlyWithDeadline={onlyWithDeadline}
-				setOnlyWithDeadline={setOnlyWithDeadlineAndResetPage}
+				showDeadlineFilter={false}
 				clearAllFilters={clearAllFilters}
 				resultCount={searchTerm.trim() ? filteredData.length : total}
 			/>
@@ -220,7 +197,7 @@ export default function Home() {
 			{error ? (
 				<div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-8 text-center">
 					<p className="text-destructive font-medium">
-						Failed to load admission dates. Please try again later.
+						Failed to load result information. Please try again later.
 					</p>
 				</div>
 			) : isLoading ? (
@@ -241,11 +218,10 @@ export default function Home() {
 				</div>
 			) : filteredData.length === 0 ? (
 				<div className="flex flex-col items-center justify-center py-20 text-center bg-card/50 rounded-3xl border border-border/50 border-dashed">
-					<CalendarX2 className="w-16 h-16 text-muted-foreground/30 mb-4" />
-					<h3 className="text-xl font-bold mb-2">No dates found</h3>
+					<FileX2 className="w-16 h-16 text-muted-foreground/30 mb-4" />
+					<h3 className="text-xl font-bold mb-2">No result info found</h3>
 					<p className="text-muted-foreground max-w-sm">
-						We couldn't find any admission dates matching "{searchTerm}". Try
-						adjusting your search.
+						We couldn't find any result information matching "{searchTerm}".
 					</p>
 				</div>
 			) : (

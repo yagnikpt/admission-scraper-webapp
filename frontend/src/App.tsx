@@ -7,6 +7,8 @@ import AnnouncementDetails from "@/pages/AnnouncementDetails";
 import GeneralAnnouncements from "@/pages/GeneralAnnouncements";
 import Home from "@/pages/Home";
 import NotFound from "@/pages/not-found";
+import ExamInfoAnnouncements from "@/pages/ExamInfoAnnouncements";
+import ResultInfoAnnouncements from "@/pages/ResultInfoAnnouncements";
 import { queryClient } from "./lib/queryClient";
 
 function Router() {
@@ -16,6 +18,8 @@ function Router() {
 			<Routes>
 				<Route path="/" Component={Home} />
 				<Route path="/announcements" Component={GeneralAnnouncements} />
+				<Route path="/announcements/exam-info" Component={ExamInfoAnnouncements} />
+				<Route path="/announcements/result-info" Component={ResultInfoAnnouncements} />
 				<Route path="/announcements/:id" Component={AnnouncementDetails} />
 				{/* Fallback to 404 */}
 				<Route Component={NotFound} />

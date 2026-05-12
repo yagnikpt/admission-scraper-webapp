@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.endpoints import announcements, filters, meta
+from .endpoints import announcements, filters, meta
 
 # Create main API router
 api_router = APIRouter()
